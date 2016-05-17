@@ -21,4 +21,6 @@ for i in (1, len(entrada)-1):
         x.right = BSTNode(entrada[i])
         x = x.right
 
+print (root.left.left.key)
+
 
