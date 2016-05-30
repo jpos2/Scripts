@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <title>Java Script Nome, Idade, CPF e Curso</title>
+        <script>
+            function change (a1, b1)
+            {
+                this.entrada = document.getElementById(b1).value;
+                document.getElementById(a1).innerHTML = this.entrada;
+            }
+
+            function submit()
+            {
+                  change("nome", "i_nome")
+                  change("idade", "i_idade")
+                  change("cpf", "i_cpf")
+                  change    ("curso", "i_curso")
+            }
+        </script>
+    </head>
+
+    <body>
+
+        <p id="info"> Preencha os campos abaixo: </p>  
+        
+        <input id="i_nome" type="input">Nome<br></button>
+        <input id="i_idade" type="input">Idade<br></button>
+        <input id="i_cpf" type="input">CPF<br></button>
+        <input id="i_curso" type="input">Curso<br></button>
+        
+        <button type="button" onclick=submit()> Submit</button>
+        
+        <div id="nome"><br></div>
+        <div id="idade"><br></div>
+        <div id="cpf"><br></div>
+        <div id="curso"><br></div>
+        
+    
+    </body>
+    
+    
+    
+</html>
