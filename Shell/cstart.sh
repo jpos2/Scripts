@@ -2,10 +2,10 @@
 
 
 #variaveis
-app=
-ip=
-user=
-contain=
+contain=$1
+app=$2
+user=${3:-"root"}
+
 #funcoes
 
 getINPUT()
@@ -29,12 +29,28 @@ getINPUT()
 
 getIP()
 {
-
+        timeBoxIP=0
+        ip=$(lxc-ls --fancy | grep -w $cont | awk '{print $3}')
+        
+        if [ $ip  != "-" -a $timeboxIP -le 5 ]; then
+            echo "$ip ..."
+            startCONTAIN
+        else
+            if [ $timeBoxIp -le 5 ]; then
+                echo "Timeout..."
+                #exit
+            else               
+                timeBoxIP=`expr $timeBoxIP + 1`
+                sleep 1
+                getIP
+            fi            
+        fi
 }
 
 getCONTAIN()
 {
     Verify=$(lxc-info -n $contain)
+    
     if [ "$Verify" ==  "$contain doesn't exist" ]; then    
         echo "Container não existe!"
         #exit
@@ -43,62 +59,22 @@ getCONTAIN()
         if [ "$Verify" ==  "STOPPED" ]; then    
             echo "Iniciando o container: $contain..."
             lxc-start -n $contain -d
+        else
+            echo "Container $contain ja iniciado!"
+        fi
+    fi
     
 }
 
-
-<<coment
-
-echo "IP AGORA: $ip"
-cont=$1
-app=$2
-user=$3
-ip="-"
-echo "IP AGORA: $ip"
-
-
-wip(){
-if [ "$ip" == "-" ]; then 
-	echo "IP AGORA: $ip"
-	echo "sem ip..."
-        sleep 1
-        ip=$(lxc-ls --fancy | grep -w $cont | awk '{print $3}')
-	echo "IP AGORA: $ip"
-	wip
-	echo "IP AGORA: $ip"
-
-else
-echo "IP AGORA: $ip"
-
-	if [ "$ip" == "-" ]; then
-echo "IP AGORA: $ip"
-		wip
-echo "IP AGORA: $ip"
-
-	fi
-fi
+sshCONTAIN()
+{
+    ssh -i ~/.ssh/id_lxc -X -l $user $ip $app
 }
-echo "IP AGORA: $ip"
 
-echo "Iniciando o container $cont"
-lxc-start -n $cont -d
+startCONTAIN()
+{
+    getINPUT
+}
 
-echo "Obtendo IP do conteiner $cont"
-echo "IP AGORA: $ip"
+startCONTAIN
 
-echo "IP AGORA: $ip"
-wip
-
-echo "IP AGORA: $ip"
-echo "O IP e $ip"
-echo "IP AGORA: $ip"
-
-echo "Fazendo acesso SSH para o usuario $user no ip $ip e executando o app $app"
-ssh -i ~/.ssh/id_lxc -X -l $user $ip $app 
-echo "IP AGORA: $ip"
-
-echo "Finalizando o container $1"
-#lxc-stop -n $1
-#echo "$1 $2 $3"
-coment
-echo "a"
