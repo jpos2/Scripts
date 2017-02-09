@@ -1,52 +1,117 @@
 #!/bin/bash
-echo "IP AGORA: $ip"
-cont=$1
+#written by jpos, jpos at cin dot ufpe dot br
+#version 1.3
+
+#variaveis
+contain=$1
 app=$2
-user=$3
-ip="-"
-echo "IP AGORA: $ip"
+user=${3:-"$contain"}
+mode=${4:-"normal"}
 
+#funcoes
 
-wip(){
-if [ "$ip" == "-" ]; then 
-	echo "IP AGORA: $ip"
-	echo "sem ip..."
-        sleep 1
-        ip=$(lxc-ls --fancy | grep -w $cont | awk '{print $3}')
-	echo "IP AGORA: $ip"
-	wip
-	echo "IP AGORA: $ip"
+getINPUT()
+{
+    
 
-else
-echo "IP AGORA: $ip"
+    if [ "$mode" == "clone" -o "$user" == "clone" ]; then
+        echo "Argumento clone existe"
+        echo "Iniciando func clone"
+        startCloneCONTAIN
+        exit
+    else
+        echo "Argumento clone nao existe"
+       
+    fi
 
-	if [ "$ip" == "-" ]; then
-echo "IP AGORA: $ip"
-		wip
-echo "IP AGORA: $ip"
-
-	fi
-fi
+    if [ $contain -a $app ]; then
+        echo "Argumento do container e program existem"
+        startCONTAIN
+    else
+        echo "Argumento do container ou/e program nao existem"
+        exit
+    fi
+    
 }
-echo "IP AGORA: $ip"
 
-echo "Iniciando o container $cont"
-lxc-start -n $cont -d
 
-echo "Obtendo IP do conteiner $cont"
-echo "IP AGORA: $ip"
+startCloneCONTAIN()
+{
 
-echo "IP AGORA: $ip"
-wip
+	containClone=$contain\_$(date +%N)
+	lxc-clone -o $contain -n $containClone
+	contain=$containClone
 
-echo "IP AGORA: $ip"
-echo "O IP e $ip"
-echo "IP AGORA: $ip"
+        lxc-start -d -n tor
+        lxc-attach -n tor service tor start
 
-echo "Fazendo acesso SSH para o usuario $user no ip $ip e executando o app $app"
-ssh -i ~/.ssh/id_lxc -X -l $user $ip $app 
-echo "IP AGORA: $ip"
+	startCONTAIN
 
-echo "Finalizando o container $1"
-#lxc-stop -n $1
-#echo "$1 $2 $3"
+	echo "desligando container $contain"
+    lxc-stop -n $contain
+    echo "container $contain desligando"
+
+	echo "Destruindo container clone"
+	lxc-destroy -n $containClone
+	echo "Container $contain destruindo"
+}
+
+
+
+
+startCONTAIN()
+{
+    Verify=$(lxc-info -n $contain)
+    
+    if [ "$Verify" ==  "$contain doesn't exist" ]; then    
+        echo "Container não existe!"
+        #exit
+    else
+        Verify=$(lxc-info -n $contain | grep State | awk '{print $2}')
+        if [ "$Verify" ==  "STOPPED" ]; then    
+            echo "Iniciando o container: $contain..."
+            lxc-start -n $contain -d
+            sleep 1
+            getIP
+
+        else
+            echo "Container $contain ja iniciado!"
+            getIP
+        fi
+    fi
+}
+
+
+getIP()
+{
+    #timeBoxIP=0
+    #sleep 3
+    ip=$(lxc-ls --fancy | grep -w $contain | awk '{print $3}')
+    echo "O IP e': $ip"
+#   if [ $ip  != "-" -a $timeboxIP -le 5 ]; then
+    if [ $ip  != "-" ]; then
+        echo "$ip ..."
+        sshCONTAIN
+	else
+		getIP               
+    fi
+}
+
+
+sshCONTAIN()
+{
+
+    ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_lxc -X -l $user $ip $app
+    echo "desligando container $contain"
+    lxc-stop -n $contain
+    echo "container $contain desligando"
+}
+
+
+launcherCONTAIN()
+{
+    getINPUT
+}
+
+
+launcherCONTAIN
